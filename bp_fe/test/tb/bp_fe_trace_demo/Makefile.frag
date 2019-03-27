@@ -1,6 +1,6 @@
 DUT_PARAMS= \
-           -pvalue+vaddr_width_p=22               \
-           -pvalue+paddr_width_p=22               \
+           -pvalue+vaddr_width_p=39               \
+           -pvalue+paddr_width_p=56               \
            -pvalue+asid_width_p=10                \
            -pvalue+btb_indx_width_p=9             \
            -pvalue+bht_indx_width_p=5             \
@@ -11,7 +11,7 @@ DUT_PARAMS= \
            -pvalue+lce_sets_p=64                  \
            -pvalue+lce_assoc_p=8                  \
            -pvalue+cce_block_size_in_bytes_p=64   
-           
+
 TB_PARAMS= \
            -pvalue+core_els_p=1                   \
            -pvalue+eaddr_width_p=64               \
