@@ -6,7 +6,6 @@ module bp_be_trace_replay_gen
  #(parameter vaddr_width_p="inv"
    , parameter paddr_width_p="inv"
    , parameter asid_width_p="inv"
-   , parameter branch_metadata_fwd_width_p="inv"   
    , parameter trace_ring_width_p="inv"
 
    , localparam fu_op_width_lp=`bp_be_fu_op_width
@@ -31,13 +30,11 @@ module bp_be_trace_replay_gen
    , input logic                            ready_i
    );
 
-`declare_bp_be_internal_if_structs(vaddr_width_p
-                                   , paddr_width_p
-                                   , asid_width_p
-                                   , branch_metadata_fwd_width_p
-                                   );
-
 logic [reg_data_width_lp-1:0] mem_data;
+
+wire unused0 = clk_i;
+wire unused1 = reset_i;
+wire unused2 = ready_i;
 
 always_comb 
   begin

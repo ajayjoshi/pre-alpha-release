@@ -19,6 +19,7 @@
 $BSG_IP_CORES_DIR/bsg_noc/bsg_noc_pkg.v
 # Interface packages
 $BP_COMMON_DIR/src/include/bp_common_pkg.vh
+$BP_COMMON_DIR/src/include/bp_common_aviary_pkg.vh
 # FE packages
 $BP_FE_DIR/src/include/bp_fe_icache_pkg.vh
 $BP_FE_DIR/src/include/bp_fe_itlb_pkg.vh
@@ -71,6 +72,8 @@ $BSG_IP_CORES_DIR/bsg_misc/bsg_lru_pseudo_tree_encode.v
 $BSG_IP_CORES_DIR/bsg_misc/bsg_lru_pseudo_tree_decode.v
 $BSG_IP_CORES_DIR/bsg_misc/bsg_clkgate_optional.v
 $BSG_IP_CORES_DIR/bsg_misc/bsg_dlatch.v
+$BSG_IP_CORES_DIR/bsg_misc/bsg_mux_butterfly.v
+$BSG_IP_CORES_DIR/bsg_misc/bsg_swap.v
 $BSG_IP_CORES_DIR/bsg_noc/bsg_mesh_router.v
 $BSG_IP_CORES_DIR/bsg_noc/bsg_mesh_router_buffered.v
 $BSG_IP_CORES_DIR/bsg_noc/bsg_wormhole_router.v
@@ -94,28 +97,30 @@ $BP_BE_DIR/src/v/bp_be_checker/bp_be_detector.v
 $BP_BE_DIR/src/v/bp_be_checker/bp_be_director.v
 $BP_BE_DIR/src/v/bp_be_checker/bp_be_scheduler.v
 # MMU
-$BP_BE_DIR/src/v/bp_be_mmu/bp_be_mmu_top.v
-$BP_BE_DIR/src/v/bp_be_mmu/bp_be_dcache/bp_be_dcache.v
-$BP_BE_DIR/src/v/bp_be_mmu/bp_be_dcache/bp_be_dcache_lce_cmd.v
-$BP_BE_DIR/src/v/bp_be_mmu/bp_be_dcache/bp_be_dcache_lce.v
-$BP_BE_DIR/src/v/bp_be_mmu/bp_be_dcache/bp_be_dcache_lce_req.v
-$BP_BE_DIR/src/v/bp_be_mmu/bp_be_dcache/bp_be_dcache_lce_data_cmd.v
-$BP_BE_DIR/src/v/bp_be_mmu/bp_be_dcache/bp_be_dcache_wbuf.v
-$BP_BE_DIR/src/v/bp_be_mmu/bp_be_dcache/bp_be_dcache_wbuf_queue.v
-$BP_BE_DIR/src/v/bp_be_mmu/bp_be_dtlb/bp_be_dtlb.v
-$BP_BE_DIR/src/v/bp_be_mmu/bp_be_dtlb/bp_be_dtlb_replacement.v
-$BP_BE_DIR/src/v/bp_be_mmu/bp_be_dtlb/bp_be_ptw.v
+$BP_BE_DIR/src/v/bp_be_mem/bp_be_csr.v
+$BP_BE_DIR/src/v/bp_be_mem/bp_be_mem_top.v
+$BP_BE_DIR/src/v/bp_be_mem/bp_be_dcache/bp_be_dcache.v
+$BP_BE_DIR/src/v/bp_be_mem/bp_be_dcache/bp_be_dcache_lce_cmd.v
+$BP_BE_DIR/src/v/bp_be_mem/bp_be_dcache/bp_be_dcache_lce.v
+$BP_BE_DIR/src/v/bp_be_mem/bp_be_dcache/bp_be_dcache_lce_req.v
+$BP_BE_DIR/src/v/bp_be_mem/bp_be_dcache/bp_be_dcache_lce_data_cmd.v
+$BP_BE_DIR/src/v/bp_be_mem/bp_be_dcache/bp_be_dcache_wbuf.v
+$BP_BE_DIR/src/v/bp_be_mem/bp_be_dcache/bp_be_dcache_wbuf_queue.v
+$BP_BE_DIR/src/v/bp_be_mem/bp_be_dtlb/bp_be_dtlb.v
+$BP_BE_DIR/src/v/bp_be_mem/bp_be_dtlb/bp_be_dtlb_replacement.v
+$BP_BE_DIR/src/v/bp_be_mem/bp_be_dtlb/bp_be_ptw.v
 # Common
 $BP_BE_DIR/src/v/common/bp_be_trace_replay_gen.v
 $BP_BE_DIR/src/v/common/bsg_fifo_1r1w_rolly.v
 ## FE files
 $BP_FE_DIR/src/v/bp_fe_bht.v
-$BP_FE_DIR/src/v/bp_fe_branch_predictor.v
+#$BP_FE_DIR/src/v/bp_fe_branch_predictor.v
 $BP_FE_DIR/src/v/bp_fe_btb.v
 $BP_FE_DIR/src/v/bp_fe_lce_cmd.v
 $BP_FE_DIR/src/v/bp_fe_lce_data_cmd.v
 $BP_FE_DIR/src/v/bp_fe_icache.v
 $BP_FE_DIR/src/v/bp_fe_instr_scan.v
+$BP_FE_DIR/src/v/bp_fe_itlb_replacement.v
 $BP_FE_DIR/src/v/bp_fe_itlb.v
 $BP_FE_DIR/src/v/bp_fe_lce.v
 $BP_FE_DIR/src/v/bp_fe_lce_req.v
@@ -146,5 +151,5 @@ $BP_ME_DIR/src/v/network/bp_me_network_channel_data_resp.v
 $BP_ME_DIR/src/v/network/bp_me_network_pkt_encode_data_cmd.v
 $BP_ME_DIR/src/v/network/bp_me_network_pkt_encode_data_resp.v
 ## TOP
-$BP_TOP_DIR/src/v/bp_multi_top.v
+$BP_TOP_DIR/src/v/bp_top.v
 $BP_TOP_DIR/src/v/bp_core.v

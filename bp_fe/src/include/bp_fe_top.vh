@@ -11,7 +11,7 @@
 
 
 `define declare_bp_fe_structs(vaddr_width_mp,paddr_width_mp,asid_width_mp,branch_metadata_fwd_width_mp)         \
-  `declare_bp_common_fe_be_if_structs(vaddr_width_mp,paddr_width_mp,asid_width_mp,branch_metadata_fwd_width_mp) \
+  `declare_bp_fe_be_if(vaddr_width_mp,paddr_width_mp,asid_width_mp,branch_metadata_fwd_width_mp) \
                                                                                                                 \
   typedef struct packed                                                                                         \
   {                                                                                                             \
@@ -93,6 +93,13 @@ typedef struct packed
     logic [ppn_width_mp-1:0] ppn;                           \
   }  bp_fe_itlb_icache_data_resp_s;
 
+`define declare_bp_fe_itlb_vaddr_s(vaddr_width_mp, sets_mp, block_size_in_bytes_mp)                \
+  typedef struct packed                                                                            \
+  {                                                                                                \
+    logic [vaddr_width_mp-`BSG_SAFE_CLOG2(sets_mp*block_size_in_bytes_mp)-1:0] tag;                \
+    logic [`BSG_SAFE_CLOG2(sets_mp)-1:0]                                       index;              \
+    logic [`BSG_SAFE_CLOG2(block_size_in_bytes_mp)-1:0]                        offset;             \
+  }  bp_fe_itlb_vaddr_s;   
 
 /*
  * The pc_gen logic recieves the commands from the backend if there is any
@@ -113,10 +120,10 @@ typedef struct packed
  * bp_fe_pc_gen_icache_s defines the interface between pc_gen and icache.
  * pc_gen informs the icache of the pc value.
 */
-`define declare_bp_fe_pc_gen_icache_s(eaddr_width_mp)  \
+`define declare_bp_fe_pc_gen_icache_s(vaddr_width_mp)  \
   typedef struct packed                                \
   {                                                    \
-    logic [eaddr_width_mp-1:0] virt_addr;              \
+    logic [vaddr_width_mp-1:0] virt_addr;              \
   }  bp_fe_pc_gen_icache_s;
 
 
@@ -124,21 +131,21 @@ typedef struct packed
  * bp_fe_pc_gen_icache_s defines the interface between pc_gen and itlb.
  * The pc_gen informs the itlb of the pc address.
 */
-`define declare_bp_fe_pc_gen_itlb_s(eaddr_width_mp)  \
+`define declare_bp_fe_pc_gen_itlb_s(vaddr_width_mp)  \
   typedef struct packed                              \
   {                                                  \
-    logic [eaddr_width_mp-1:0] virt_addr;            \
+    logic [vaddr_width_mp-1:0] virt_addr;            \
   }  bp_fe_pc_gen_itlb_s;
 
 
-`define declare_bp_fe_branch_metadata_fwd_s(btb_idx_width_mp,bht_idx_width_mp,ras_addr_width_mp) \
+`define declare_bp_fe_branch_metadata_fwd_s(btb_tag_width_mp,btb_idx_width_mp,bht_idx_width_mp,ras_idx_width_mp) \
   typedef struct packed                                                                          \
   {                                                                                              \
-    logic [btb_idx_width_mp-1:0]    btb_indx;                                                    \
-    logic [bht_idx_width_mp-1:0]    bht_indx;                                                    \
-    logic [ras_addr_width_mp-1:0]   ras_addr;                                                    \
+    logic [btb_tag_width_mp-1:0]    btb_tag;                                                     \
+    logic [btb_idx_width_mp-1:0]    btb_idx;                                                    \
+    logic [bht_idx_width_mp-1:0]    bht_idx;                                                    \
+    logic [ras_idx_width_mp-1:0]   ras_idx;                                                    \
   }  bp_fe_branch_metadata_fwd_s;
-
 
 /*
  *  All the opcode macros for the control flow instructions.  These opcodes are
@@ -163,14 +170,14 @@ typedef struct packed
 `define bp_fe_pc_gen_cmd_width(vaddr_width_mp,branch_metadata_fwd_width_mp) \
   (bp_eaddr_width_gp+branch_metadata_fwd_width_mp+2)
 
-`define bp_fe_pc_gen_icache_width(eaddr_width_mp) (eaddr_width_mp)
+`define bp_fe_pc_gen_icache_width(vaddr_width_mp) (vaddr_width_mp)
 
-`define bp_fe_pc_gen_itlb_width(eaddr_width_mp) (eaddr_width_mp)
+`define bp_fe_pc_gen_itlb_width(vaddr_width_mp) (vaddr_width_mp)
 
 `define bp_fe_instr_scan_width (1+`bp_fe_instr_scan_class_width+bp_eaddr_width_gp)
 
-`define bp_fe_branch_metadata_fwd_width(btb_idx_width_mp,bht_idx_width_mp,ras_addr_width_mp) \
-  (btb_idx_width_mp+bht_idx_width_mp+ras_addr_width_mp)
+`define bp_fe_branch_metadata_fwd_width(btb_tag_width_mp,btb_idx_width_mp,bht_idx_width_mp,ras_idx_width_mp) \
+(btb_tag_width_mp+btb_idx_width_mp+bht_idx_width_mp+ras_idx_width_mp)
 
 `define bp_fe_itlb_icache_data_resp_width(ppn_width_mp) \
   (ppn_width_mp)
@@ -180,5 +187,11 @@ typedef struct packed
 
 `define bp_fe_itlb_queue_width(vaddr_width_mp,branch_metadata_fwd_width_mp) \
   (`bp_fe_queue_width(vaddr_width_mp,branch_metadata_fwd_width_mp))
+
+`define bp_fe_vtag_width(vaddr_width_mp, sets_mp, block_size_in_bytes_mp) \
+  (vaddr_width_mp-`BSG_SAFE_CLOG2(sets_mp*block_size_in_bytes_mp))
+
+`define bp_fe_ptag_width(paddr_width_mp, sets_mp, block_size_in_bytes_mp) \
+  (paddr_width_mp-`BSG_SAFE_CLOG2(sets_mp*block_size_in_bytes_mp))
 
 `endif

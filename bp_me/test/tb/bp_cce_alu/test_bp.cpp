@@ -40,9 +40,11 @@ int sc_main(int argc, char **argv)
     DUT.res_o(res_o);
     DUT.branch_res_o(branch_res_o);
 
+    #if (VM_TRACE == 1)
     VerilatedVcdSc* wf = new VerilatedVcdSc;
     DUT.trace(wf, TRACE_LEVELS);
     wf->open("dump.vcd");
+    #endif
 
     sc_start(0, SC_NS);
 
@@ -66,6 +68,10 @@ int sc_main(int argc, char **argv)
         if((opd_a_i + opd_b_i) != res_o) 
         {
             cout << "@" << sc_time_stamp() << " TEST FAILED " << endl;
+            #if (VM_TRACE == 1)
+            wf->close();
+            #endif
+
             return -1;
         }
     }
@@ -97,6 +103,10 @@ int sc_main(int argc, char **argv)
         if((opd_a_i - opd_b_i) != res_o) 
         {
             cout << "@" << sc_time_stamp() << " TEST FAILED " << endl;
+            #if (VM_TRACE == 1)
+            wf->close();
+            #endif
+
             return -1;
         }
     }
@@ -118,6 +128,10 @@ int sc_main(int argc, char **argv)
         if((opd_a_i == opd_b_i) && !branch_res_o) 
         {
             cout << "@" << sc_time_stamp() << " TEST FAILED " << endl;
+            #if (VM_TRACE == 1)
+            wf->close();
+            #endif
+
             return -1;
         }
     }
@@ -138,6 +152,10 @@ int sc_main(int argc, char **argv)
         if((opd_a_i != opd_b_i) && !branch_res_o) 
         {
             cout << "@" << sc_time_stamp() << " TEST FAILED " << endl;
+            #if (VM_TRACE == 1)
+            wf->close();
+            #endif
+
             return -1;
         }
     }
@@ -158,6 +176,10 @@ int sc_main(int argc, char **argv)
         if((opd_a_i < opd_b_i) && !branch_res_o) 
         {
             cout << "@" << sc_time_stamp() << " TEST FAILED " << endl;
+            #if (VM_TRACE == 1)
+            wf->close();
+            #endif
+
             return -1;
         }
     }
@@ -178,6 +200,10 @@ int sc_main(int argc, char **argv)
         if((opd_a_i <= opd_b_i) && !branch_res_o) 
         {
             cout << "@" << sc_time_stamp() << " TEST FAILED " << endl;
+            #if (VM_TRACE == 1)
+            wf->close();
+            #endif
+
             return -1;
         }
     }
@@ -198,13 +224,18 @@ int sc_main(int argc, char **argv)
         if(!branch_res_o) 
         {
             cout << "@" << sc_time_stamp() << " TEST FAILED " << endl;
+            #if (VM_TRACE == 1)
+            wf->close();
+            #endif
             return -1;
         }
     }
 
     cout << "TEST PASSED!" << endl;
 
+    #if (VM_TRACE == 1)
     wf->close();
+    #endif
 
     return 0;
 }
