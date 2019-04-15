@@ -11,7 +11,8 @@ BP_DEMOS = \
 	trap_demo
 
 RV64_BENCHMARKS = \
-  median   \
+        dhrystone   \
+	median \
 	multiply \
 	towers   \
 	vvadd
