@@ -35,7 +35,7 @@ axe:
 
 gnu:
 	cd $(GNU_DIR); \
-	./configure --prefix=$(BP_EXTERNAL_DIR) \
+	./configure --prefix=$(BP_EXTERNAL_DIR) --with-arch=rv64i --with-abi=lp64\
 	&& make && make install && make clean
 
 fesvr:
