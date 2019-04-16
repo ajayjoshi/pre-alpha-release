@@ -16,7 +16,7 @@ SPKOP =
 all: compile_vm
 
 wrap_system: 
-	cat test.main.template > ${MAIN}
+	cat sysprogram/test.main.template > ${MAIN}
 	cat $(SYS_PROGRAM) >> ${MAIN}
 	echo "sys_program_end:" >> ${MAIN}
 
