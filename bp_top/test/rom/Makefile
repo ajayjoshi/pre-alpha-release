@@ -7,16 +7,19 @@ SPIKE_MOD_PATH = $(BP_EXTERNAL_DIR)/bin
 
 TEST_DIR       = $(BP_TOP_DIR)/test
 ROM_DIR        = $(TEST_DIR)/rom/v
+SYS_PROGRAM_DIR = $(TEST_DIR)/rom/vm/sysprogram
 
 HEX2BIN        = $(BP_TOP_DIR)/software/py/hex2binascii.py
 SPIKE2TR       = $(BP_TOP_DIR)/software/py/spike2tr.py
 PTGEN          = $(BP_TOP_DIR)/software/py/ptgen.py
 BSG_ROM_GEN    = $(BSG_IP_CORES_DIR)/bsg_mem/bsg_ascii_to_rom.py
+SYS_DATA_GEN   = $(TEST_DIR)/rom/vm/bsg_ascii_to_data.py
 RISCV_ELF2HEX  = elf2hex
 RISCV_SIM      = $(SPIKE_MOD_PATH)/spike
 RISCV_OBJDUMP  = riscv64-unknown-elf-objdump -D -M no-aliases,numeric
 RISCV_GCC_RAND  = riscv64-unknown-elf-gcc -nostdlib -nostartfiles -Wa,-march=rv64g 
 RISCV_GCC_RAND += -I${RANDOM_FLD}p/ -T${RANDOM_FLD}p/link.ld
+BUILD_VMTEST = Y
 
 include Makefile.frag
 
@@ -29,7 +32,7 @@ demos: demos_elf demos_rom clean
 isa_pt: 
 	python $(PTGEN) src/isa/pt.S 0x80009000 0x80000000 4
 
-benchmarks_pt: 
+benchmarks_pt:
 	python $(PTGEN) src/benchmarks/pt.S 0x80009000 0x80000000,0x80008000 4,1
 
 isa_elf:
@@ -49,6 +52,7 @@ isa_rom: $(foreach x, $(subst -,_,$(RV64_TESTS)), $(x).v)
 isa_rom: $(foreach x, $(subst -,_,$(RV64_TESTS)), $(x).trace)
 
 benchmarks_rom: SPIKE_OPTS := --pc=0x80000124 --end-pc=0x800001b0
+benchmarks_rom: VM_SPIKEOP := --end-pc=0x571b0
 benchmarks_rom: $(foreach x, $(subst -,_,$(RV64_BENCHMARKS)), $(x).v)
 benchmarks_rom: $(foreach x, $(subst -,_,$(RV64_BENCHMARKS)), $(x).trace)
 
@@ -61,20 +65,30 @@ demos_rom: $(foreach x, $(subst -,_,$(BP_DEMOS)), $(x).fake_trace)
 	&& sed -i '1s#^#/*verilator coverage_off*/\n#' $*.vtmp \
 	&& echo "/*verilator coverage_on*/" >> $*.vtmp \
 	&& awk 'FNR==2{system("$(RISCV_OBJDUMP) $*.elf | sed 's-^-//-'")} 1' $*.vtmp \
-		> $(ROM_DIR)/$*_rom.v  \
+	> $*_rom.v  \
 	&& rm $*.vtmp \
+	&& mv $*_rom.v $(ROM_DIR)
 
 %.bin: %.hex
 	python $(HEX2BIN) $< 512 > $@
+ifeq ($(BUILD_VMTEST),Y)
+	python $(SYS_DATA_GEN) $@ > $(SYS_PROGRAM_DIR)/$*.data
+	make -C $(SYS_PROGRAM_DIR)/../ SYS_PROGRAM=$(SYS_PROGRAM_DIR)/$*.data OUTPUT=$(SYS_PROGRAM_DIR)/$* SPKOP=$(VM_SPIKEOP)
+endif
 
 # 64 kB ROM with a 0x80000000 offset
 %.hex:
+ifeq ($(BUILD_VMTEST),Y)
 	$(RISCV_ELF2HEX) 16 65536 $*.elf 2147483648  > $@
+else
+	$(RISCV_ELF2HEX) 16 131072 $*.elf 2147483648  > $@
+endif
 
 %.trace: 
 	$(RISCV_SIM) -l $(SPIKE_OPTS) $(basename $@).elf 2>$(basename $@).spike
 	python $(SPIKE2TR) $(basename $@) 10
-	python $(BSG_ROM_GEN) $(basename $@).tr bp_trace_rom zero > $(ROM_DIR)/$(basename $@)_rom.tr.v
+	python $(BSG_ROM_GEN) $(basename $@).tr bp_trace_rom zero > $(basename $@)_rom.tr.v
+	mv $(basename $@)_rom.tr.v $(ROM_DIR)
 
 %.fake_trace:
 	touch $(ROM_DIR)/$(basename $@)_rom.tr.v
