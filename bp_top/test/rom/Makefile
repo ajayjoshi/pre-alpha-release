@@ -48,7 +48,7 @@ isa_rom: SPIKE_OPTS :=
 isa_rom: $(foreach x, $(subst -,_,$(RV64_TESTS)), $(x).v)
 isa_rom: $(foreach x, $(subst -,_,$(RV64_TESTS)), $(x).trace)
 
-benchmarks_rom: SPIKE_OPTS := --pc=0x80000124 --end-pc=0x800001b0
+benchmarks_rom: SPIKE_OPTS := --pc=0x80000124 #--end-pc=0x800001b0
 benchmarks_rom: $(foreach x, $(subst -,_,$(RV64_BENCHMARKS)), $(x).v)
 benchmarks_rom: $(foreach x, $(subst -,_,$(RV64_BENCHMARKS)), $(x).trace)
 
