@@ -12,11 +12,17 @@ BP_DEMOS = \
 
 RV64_BENCHMARKS = \
         dhrystone   \
-	median \
+        median \
 	multiply \
 	towers   \
-	vvadd
-
+	vvadd   \
+	qsort   \
+        rsort	\
+        #mt-matmul \
+	#mm  \
+        #spmv   \
+        #mt-vvadd   \
+	
 RV64_TESTS = \
 	rv64ui-p-add     \
 	rv64ui-p-addi 	 \
