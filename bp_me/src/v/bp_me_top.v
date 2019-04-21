@@ -236,9 +236,6 @@ module bp_me_top
         ,.config_v_o(config_v_o[i])
         ,.config_ready_i(config_ready_i[i])
 
-        ,.boot_rom_addr_o(cce_inst_boot_rom_addr_o[i])
-        ,.boot_rom_data_i(cce_inst_boot_rom_data_i[i])
-
         // To CCE
         ,.lce_req_i(lce_req_i_to_cce[i])
         ,.lce_req_v_i(lce_req_v_i_to_cce[i])

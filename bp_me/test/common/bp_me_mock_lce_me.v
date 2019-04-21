@@ -24,6 +24,9 @@ module bp_me_mock_lce_me
 
     , localparam dcache_opcode_width_lp=$bits(bp_be_dcache_opcode_e)
     , localparam tr_ring_width_lp=(dcache_opcode_width_lp+paddr_width_p+dword_width_p)
+    , localparam cfg_link_addr_width_p=16
+    , localparam cfg_link_data_width_p=32
+
   )
   (
     input clk_i
@@ -138,26 +141,36 @@ module bp_me_mock_lce_me
   logic [num_cce_p-1:0] mem_data_cmd_v;
   logic [num_cce_p-1:0] mem_data_cmd_yumi;
 
+  // Config channel
+  logic [num_cce_p-1:0]                              freeze_li;
+  logic [num_cce_p-1:0][cfg_link_addr_width_p-2:0]   config_addr_li
+  logic [num_cce_p-1:0][cfg_link_data_width_p-1:0]   config_data_li
+  logic [num_cce_p-1:0]                              config_v_li
+  logic [num_cce_p-1:0]                              config_w_li
+  logic [num_cce_p-1:0]                              config_ready_lo
+
+  logic [num_cce_p-1:0][cfg_link_data_width_p-1:0]   config_data_lo
+  logic [num_cce_p-1:0]                              config_v_lo
+  logic [num_cce_p-1:0]                              config_ready_li
+
   bp_me_top #(
     .cfg_p(cfg_p)
-    ,.cfg_link_addr_width_p(16)
-    ,.cfg_link_data_width_p(32)
+    ,.cfg_link_addr_width_p(cfg_link_addr_width_p)
+    ,.cfg_link_data_width_p(cfg_link_data_width_p)
     ,.cce_trace_p(cce_trace_p)
   ) me (
     .clk_i(clk_i)
     ,.reset_i(reset_i)
-    // TODO: add freeze
-    ,.freeze_i('0)
+    ,.freeze_i(freeze_li[i])
 
-    // TODO: hook up config port
-    ,.config_addr_i('0)
-    ,.config_data_i('0)
-    ,.config_v_i('0)
-    ,.config_w_i('0)
-    ,.config_ready_o()
-    ,.config_data_o()
-    ,.config_v_o()
-    ,.config_ready_i('0)
+    ,.config_addr_i(config_addr_li[i])
+    ,.config_data_i(config_data_li[i])
+    ,.config_v_i(config_v_li[i])
+    ,.config_w_i(config_w_li[i])
+    ,.config_ready_o(config_ready_lo[i])
+    ,.config_data_o(config_data_lo[i])
+    ,.config_v_o(config_v_lo[i])
+    ,.config_ready_i(config_ready_li[i])
 
     ,.lce_cmd_o(lce_cmd_li)
     ,.lce_cmd_v_o(lce_cmd_v_li)
@@ -182,9 +195,6 @@ module bp_me_mock_lce_me
     ,.lce_data_resp_i(lce_data_resp_lo)
     ,.lce_data_resp_v_i(lce_data_resp_v_lo)
     ,.lce_data_resp_ready_o(lce_data_resp_ready_li)
-
-    ,.cce_inst_boot_rom_addr_o(cce_inst_boot_rom_addr)
-    ,.cce_inst_boot_rom_data_i(cce_inst_boot_rom_data)
 
     ,.mem_resp_i(mem_resp)
     ,.mem_resp_v_i(mem_resp_v)
@@ -246,6 +256,28 @@ module bp_me_mock_lce_me
         ) cce_inst_rom (
           .addr_i(cce_inst_boot_rom_addr[i])
           ,.data_o(cce_inst_boot_rom_data[i])
+        );
+
+      bp_cce_nonsynth_cfg_loader
+        #(.width_p(`bp_cce_inst_width)
+          ,.addr_width_p(inst_ram_addr_width_lp)
+          ,.cfg_link_addr_width_p(cfg_link_addr_width_p)
+          ,.cfg_link_data_width_p(cfg_link_dat_width_p)
+        )
+        cce_inst_ram_loader
+        (.clk_i(clk_i)
+         ,.reset_i(reset_i)
+         ,.freeze_o(freeze_li[i])
+         ,.boot_rom_addr_o(cce_inst_boot_rom_addr[i])
+         ,.boot_rom_data_i(cce_inst_boot_rom_data[i])
+         ,.config_addr_o(config_addr_li[i])
+         ,.config_data_o(config_data_li[i])
+         ,.config_v_o(config_v_li[i])
+         ,.config_w_o(config_w_li[i])
+         ,.config_ready_i(config_ready_lo[i])
+         ,.config_data_i(config_data_lo[i])
+         ,.config_v_i(config_v_lo[i])
+         ,.config_ready_o(config_ready_li[i])
         );
 
   end
