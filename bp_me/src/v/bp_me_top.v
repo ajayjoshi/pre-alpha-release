@@ -91,10 +91,6 @@ module bp_me_top
    , input [num_lce_p-1:0]                                          lce_data_cmd_v_i
    , output logic [num_lce_p-1:0]                                   lce_data_cmd_ready_o
 
-  // cce inst boot rom
-   , output logic [num_cce_p-1:0][inst_ram_addr_width_lp-1:0]       cce_inst_boot_rom_addr_o
-   , input [num_cce_p-1:0][`bp_cce_inst_width-1:0]                  cce_inst_boot_rom_data_i
-
   // CCE-MEM Interface
    , input [num_cce_p-1:0][bp_mem_cce_resp_width_lp-1:0]            mem_resp_i
    , input [num_cce_p-1:0]                                          mem_resp_v_i

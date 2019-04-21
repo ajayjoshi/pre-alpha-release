@@ -112,9 +112,6 @@ module bp_cce_top
    , input                                                 mem_data_cmd_yumi_i
 
    , input [lg_num_cce_lp-1:0]                             cce_id_i
-
-   , output logic [inst_ram_addr_width_lp-1:0]             boot_rom_addr_o
-   , input [`bp_cce_inst_width-1:0]                        boot_rom_data_i
   );
 
   logic [bp_lce_cce_req_width_lp-1:0]            lce_req_to_cce;
@@ -272,9 +269,6 @@ module bp_cce_top
       ,.config_data_o(config_data_o)
       ,.config_v_o(config_v_o)
       ,.config_ready_i(config_ready_i)
-
-      ,.boot_rom_addr_o(boot_rom_addr_o)
-      ,.boot_rom_data_i(boot_rom_data_i)
 
       // To CCE
       ,.lce_req_i(lce_req_to_cce)

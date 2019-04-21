@@ -118,9 +118,6 @@ module bp_cce
    , input                                             mem_data_cmd_ready_i
 
    , input [lg_num_cce_lp-1:0]                         cce_id_i
-
-   , output logic [inst_ram_addr_width_lp-1:0]         boot_rom_addr_o
-   , input [`bp_cce_inst_width-1:0]                    boot_rom_data_i
   );
 
   initial begin
@@ -254,9 +251,6 @@ module bp_cce
 
       ,.inst_o(pc_inst_lo)
       ,.inst_v_o(pc_inst_v_lo)
-
-      ,.boot_rom_addr_o(boot_rom_addr_o)
-      ,.boot_rom_data_i(boot_rom_data_i)
       );
 
 
