@@ -143,15 +143,15 @@ module bp_me_mock_lce_me
 
   // Config channel
   logic [num_cce_p-1:0]                              freeze_li;
-  logic [num_cce_p-1:0][cfg_link_addr_width_p-2:0]   config_addr_li
-  logic [num_cce_p-1:0][cfg_link_data_width_p-1:0]   config_data_li
-  logic [num_cce_p-1:0]                              config_v_li
-  logic [num_cce_p-1:0]                              config_w_li
-  logic [num_cce_p-1:0]                              config_ready_lo
+  logic [num_cce_p-1:0][cfg_link_addr_width_p-2:0]   config_addr_li;
+  logic [num_cce_p-1:0][cfg_link_data_width_p-1:0]   config_data_li;
+  logic [num_cce_p-1:0]                              config_v_li;
+  logic [num_cce_p-1:0]                              config_w_li;
+  logic [num_cce_p-1:0]                              config_ready_lo;
 
-  logic [num_cce_p-1:0][cfg_link_data_width_p-1:0]   config_data_lo
-  logic [num_cce_p-1:0]                              config_v_lo
-  logic [num_cce_p-1:0]                              config_ready_li
+  logic [num_cce_p-1:0][cfg_link_data_width_p-1:0]   config_data_lo;
+  logic [num_cce_p-1:0]                              config_v_lo;
+  logic [num_cce_p-1:0]                              config_ready_li;
 
   bp_me_top #(
     .cfg_p(cfg_p)
@@ -161,16 +161,16 @@ module bp_me_mock_lce_me
   ) me (
     .clk_i(clk_i)
     ,.reset_i(reset_i)
-    ,.freeze_i(freeze_li[i])
+    ,.freeze_i(freeze_li)
 
-    ,.config_addr_i(config_addr_li[i])
-    ,.config_data_i(config_data_li[i])
-    ,.config_v_i(config_v_li[i])
-    ,.config_w_i(config_w_li[i])
-    ,.config_ready_o(config_ready_lo[i])
-    ,.config_data_o(config_data_lo[i])
-    ,.config_v_o(config_v_lo[i])
-    ,.config_ready_i(config_ready_li[i])
+    ,.config_addr_i(config_addr_li)
+    ,.config_data_i(config_data_li)
+    ,.config_v_i(config_v_li)
+    ,.config_w_i(config_w_li)
+    ,.config_ready_o(config_ready_lo)
+    ,.config_data_o(config_data_lo)
+    ,.config_v_o(config_v_lo)
+    ,.config_ready_i(config_ready_li)
 
     ,.lce_cmd_o(lce_cmd_li)
     ,.lce_cmd_v_o(lce_cmd_v_li)
@@ -259,10 +259,11 @@ module bp_me_mock_lce_me
         );
 
       bp_cce_nonsynth_cfg_loader
-        #(.width_p(`bp_cce_inst_width)
-          ,.addr_width_p(inst_ram_addr_width_lp)
+        #(.inst_width_p(`bp_cce_inst_width)
+          ,.inst_ram_addr_width_p(inst_ram_addr_width_lp)
+          ,.inst_ram_els_p(num_cce_instr_ram_els_p)
           ,.cfg_link_addr_width_p(cfg_link_addr_width_p)
-          ,.cfg_link_data_width_p(cfg_link_dat_width_p)
+          ,.cfg_link_data_width_p(cfg_link_data_width_p)
         )
         cce_inst_ram_loader
         (.clk_i(clk_i)

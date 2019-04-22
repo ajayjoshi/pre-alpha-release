@@ -229,7 +229,7 @@ module bp_cce
       ,.cfg_link_addr_width_p(cfg_link_addr_width_p)
       ,.cfg_link_data_width_p(cfg_link_data_width_p)
       )
-    pc_inst_ram
+    inst_ram
      (.clk_i(clk_i)
       ,.reset_i(reset_i)
       ,.freeze_i(freeze_i)
@@ -397,7 +397,7 @@ module bp_cce
       ,.block_size_in_bytes_p(block_size_in_bytes_p)
       ,.lce_req_data_width_p(lce_req_data_width_p)
       )
-    cce_reg
+    registers
      (.clk_i(clk_i)
       ,.reset_i(reset_i)
       ,.decoded_inst_i(decoded_inst_lo)

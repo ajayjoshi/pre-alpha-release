@@ -71,9 +71,11 @@ dve:
 	dve -full64 -vpd vcdplus.vpd &
 
 clean:
-	rm -rf DVEfiles
 	rm -rf csrc
 	rm -rf simv.daidir simv.vdb stack.info.*
 	rm -f ucli.key vcdplus.vpd simv cm.log *.tar.gz $(VCS_LOG)
 	rm -f bsg_trace_rom_*.v bsg_trace_rom_*.tr $(TRACE_AXE)
 	rm -f testbench_postsed.v
+
+clean-dve:
+	rm -rf DVEfiles

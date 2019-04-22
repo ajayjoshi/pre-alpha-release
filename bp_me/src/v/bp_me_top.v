@@ -51,7 +51,7 @@ module bp_me_top
   )
   (input                                                            clk_i
    , input                                                          reset_i
-   , input                                                          freeze_i
+   , input [num_cce_p-1:0]                                          freeze_i
 
    // Config channel
    , input [num_cce_p-1:0][cfg_link_addr_width_p-2:0]               config_addr_i
@@ -222,7 +222,7 @@ module bp_me_top
       bp_cce_top
        (.clk_i(clk_i)
         ,.reset_i(reset_i)
-        ,.freeze_i(freeze_i)
+        ,.freeze_i(freeze_i[i])
 
         ,.cce_id_i((lg_num_cce_lp)'(i))
 

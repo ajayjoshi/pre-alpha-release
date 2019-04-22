@@ -48,4 +48,5 @@ $BP_BE_DIR/test/tb/bp_be_dcache/v/bsg_trace_node_master.v
 $BP_ME_DIR/test/common/bp_me_nonsynth_mock_lce.v
 $BP_ME_DIR/test/common/bp_cce_nonsynth_tracer.v
 $BP_ME_DIR/test/common/bp_me_mock_lce_me.v
+$BP_ME_DIR/test/common/bp_cce_nonsynth_cfg_loader.v
 testbench_postsed.v

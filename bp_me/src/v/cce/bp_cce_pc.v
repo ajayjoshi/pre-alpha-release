@@ -7,11 +7,16 @@
  *   PC register, next PC logic, and instruction memory
  *
  * Configuration Link
- *   The config link is used to fill the instruction RAM. At startup, reset_i and frozen_i will
+ *   The config link is used to fill the instruction RAM. At startup, reset_i and freeze_i will
  *   both be high. After reset_i goes low, this module waits for an external source to write
- *   the instruction RAM via the config link. The frozen_i signal is held high while the instruction
- *   RAM is written. After frozen_i goes low, the CCE begins normal operation.
+ *   the instruction RAM via the config link. The freeze_i signal is held high while the instruction
+ *   RAM is written. After freeze_i goes low, the CCE begins normal operation.
  *
+ *   config_addr_i specifies which address to read or write from
+ *   If the msb of config_addr_i is set, the address is targeting the PC instruction RAM.
+ *   The bits config_addr_i[1+:inst_ram_addr_width_lp] specify the address to use for the RAM.
+ *   The lsb of config_addr_i indicates if the read/write is for the low (0) or high (1) part
+ *   of the specified PC instruction RAM address.
  *
  */
 
@@ -63,9 +68,10 @@ module bp_cce_pc
    , output logic                                inst_v_o
   );
 
-  typedef enum logic [2:0] {
+  typedef enum logic [3:0] {
     RESET
     ,INIT
+    ,INIT_RD_RESP
     ,INIT_END
     ,BOOT
     ,BOOT_END
@@ -124,7 +130,7 @@ module bp_cce_pc
       ram_w_r <= ram_w_n;
       ram_addr_r <= ram_addr_n;
       ram_data_r <= ram_data_n;
-      ram_w_mask_r <= '0;
+      ram_w_mask_r <= ram_w_mask_n;
 
       cfg_hi_not_lo_r <= cfg_hi_not_lo_n;
 
@@ -136,12 +142,13 @@ module bp_cce_pc
   // is the inbound address for the lo or hi chunk of the instruction RAM?
   logic config_hi;
   assign config_hi = config_addr_i[0];
+  logic config_pc_ram_addr_v;
+  assign config_pc_ram_addr_v = config_addr_i[cfg_link_addr_width_p-2];
+
+  assign inst_o = ram_data_lo;
+  assign inst_v_o = inst_v_r;
 
   always_comb begin
-    // outputs always come from registers or the instruction RAM
-    inst_v_o = inst_v_r;
-    inst_o = ram_data_lo;
-
     // config link outputs default to 0
     config_ready_o = '0;
     config_v_o = '0;
@@ -171,8 +178,8 @@ module bp_cce_pc
         config_ready_o = 1'b1;
         if (config_v_i) begin
           // inputs to RAM are valid if config address high bit is set
-          ram_v_n = config_v_i & config_addr_i[cfg_link_addr_width_p-2];
-          ram_w_n = config_w_i;
+          ram_v_n = freeze_i & config_v_i & config_pc_ram_addr_v;
+          ram_w_n = freeze_i & config_w_i & config_pc_ram_addr_v & config_v_i;
           // lsb of config address specifies if write is first or second part, so ram addr
           // starts at bit 1
           ram_addr_n = config_addr_i[1+:inst_ram_addr_width_lp];
@@ -187,7 +194,7 @@ module bp_cce_pc
           pc_state_n = (ram_v_n & ram_w_n) ? INIT
                        : (ram_v_n) ? INIT_RD_RESP : INIT;
         end else begin
-          pc_state_n = (~frozen_i) ? INIT_END : INIT;
+          pc_state_n = (~freeze_i) ? INIT_END : INIT;
         end
       end
       INIT_RD_RESP: begin
@@ -236,7 +243,7 @@ module bp_cce_pc
 
         // Thus, next cycle, no instruction will be valid
         ex_pc_n = '0;
-        inst_v_n = '0;
+        inst_v_n = 1'b1;
 
       end
       FETCH: begin

@@ -17,7 +17,7 @@ module bp_cce_nonsynth_cfg_loader
     , parameter cfg_link_data_width_p = "inv"
     , parameter inst_ram_els_p        = "inv"
     , localparam cfg_writes_lp = (2*inst_ram_els_p)
-    , localparam data_hi_width_lp = (inst_ram_addr_with_p-cfg_link_data_width_p)
+    , localparam data_hi_width_lp = (inst_width_p-cfg_link_data_width_p)
     , localparam data_hi_pad_lp = (cfg_link_data_width_p-data_hi_width_lp)
   )
   (input                                             clk_i
@@ -40,8 +40,15 @@ module bp_cce_nonsynth_cfg_loader
 
   );
 
+  // TODO: reads if we want
+  wire unused1;
+  assign unused1 = config_v_i;
+  wire [cfg_link_data_width_p-1:0] unused2;
+  assign unused2 = config_data_i;
+
   typedef enum logic [2:0] {
     RESET
+    ,PAUSE
     ,SEND
     ,DONE
   } cfg_state_e;
@@ -50,11 +57,12 @@ module bp_cce_nonsynth_cfg_loader
 
   logic [cfg_link_addr_width_p-2:0] cfg_addr_r, cfg_addr_n;
   logic freeze_r, freeze_n;
+  assign freeze_o = freeze_r;
 
   always_ff @(posedge clk_i) begin
     if (reset_i) begin
-      state <= SEND;
-      cfg_addr_r <= '0;
+      state <= RESET;
+      cfg_addr_r <= {1'b1, (cfg_link_addr_width_p-2)'('0)};
       freeze_r <= 1'b1;
     end else begin
       state <= state_n;
@@ -69,9 +77,8 @@ module bp_cce_nonsynth_cfg_loader
 
   always_comb begin
     if (reset_i) begin
-      freeze_o = 1'b1;
       freeze_n = 1'b1;
-      cfg_addr_n = '0;
+      cfg_addr_n = {1'b1, (cfg_link_addr_width_p-2)'('0)};
       state_n = RESET;
       config_v_o = '0;
       config_w_o = '0;
@@ -80,7 +87,6 @@ module bp_cce_nonsynth_cfg_loader
       config_ready_o = '0;
 
     end else begin
-      freeze_o = freeze_r;
       freeze_n = 1'b1;
       cfg_addr_n = cfg_addr_r;
       state_n = state;
@@ -92,6 +98,10 @@ module bp_cce_nonsynth_cfg_loader
 
       case (state)
         RESET: begin
+          state_n = (reset_i) ? RESET : PAUSE;
+        end
+        PAUSE: begin
+          state_n = SEND;
         end
         SEND: begin
           config_v_o = 1'b1;
@@ -102,13 +112,15 @@ module bp_cce_nonsynth_cfg_loader
             : boot_rom_data_i[0+:cfg_link_data_width_p];
           if (config_ready_i) begin
             cfg_addr_n = cfg_addr_r + 'd1;
-            state_n = (cfg_addr_r == (cfg_writes_lp-1)) ? DONE : SEND;
+            state_n = (cfg_addr_r[0+:(inst_ram_addr_width_p+1)] == (cfg_writes_lp-1)) ? DONE : SEND;
+            freeze_n = (cfg_addr_r[0+:(inst_ram_addr_width_p+1)] == (cfg_writes_lp-1)) ? 1'b0 : 1'b1;
           end else begin
             state_n = SEND;
           end
         end
         DONE: begin
           freeze_n = '0;
+          state_n = DONE;
         end
       endcase
     end
