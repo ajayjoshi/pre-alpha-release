@@ -26,8 +26,7 @@ HIGHLIGHT = grep --color -E '^|Error|Warning|Implicit wire is used|Too few insta
 TRACE_AXE = trace.axe
 VCS_LOG = vcs.log
 VCS ?= vcs
-
-TRACE_P ?= 0
+CCE_TRACE_P ?= 0
 
 # testparam
 NUM_INSTR_P ?= 10000
@@ -70,7 +69,8 @@ sim: clean $(TRACE_ROMS)
 		$(INCDIR) -f sv.include $(TRACE_ROMS) $(CCE_ROM)  \
 		-debug_pp -timescale=1ps/1ps +vcs+vcdpluson +vcs+vcdplusmemon -l $(VCS_LOG) \
 		+vcs+vcdplusautoflushon +define+NUM_LCE_P=$(NUM_LCE_P) \
-		+define+NUM_INSTR_P=$(NUM_INSTR_P) | $(HIGHLIGHT)
+		+define+NUM_INSTR_P=$(NUM_INSTR_P) \
+		+define+CCE_TRACE_P=$(CCE_TRACE_P) | $(HIGHLIGHT)
 
 dve:
 	dve -full64 -vpd vcdplus.vpd &

@@ -16,6 +16,7 @@ module testbench
     //, localparam num_lce_p = `NUM_LCE_P
     , localparam mem_els_p = 2*num_lce_p*lce_sets_p*lce_assoc_p
     , localparam instr_count = `NUM_INSTR_P
+    , localparam cce_trace_p = `CCE_TRACE_P
 
     , localparam ptag_width_lp=(paddr_width_p-bp_page_offset_width_gp)
 
@@ -61,6 +62,7 @@ module testbench
     .cfg_p(cfg_p)
     ,.mem_els_p(mem_els_p)
     ,.boot_rom_els_p(mem_els_p)
+    ,.cce_trace_p(cce_trace_p)
   ) dcache_cce_mem (
     .clk_i(clk)
     ,.reset_i(reset)
@@ -148,7 +150,12 @@ module testbench
     end
   end
   */
-
+  always_ff @(posedge clk) begin
+    if (~reset && (&dcache_done)) begin
+      $finish(0);
+    end
+  end
+  /*
   initial begin
     wait(&dcache_done);
     //for (int i = 0; i < 1000000; i++) begin
@@ -156,5 +163,6 @@ module testbench
     //end
     $finish;
   end
+  */
 
 endmodule
