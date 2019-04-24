@@ -16,6 +16,8 @@ module wrapper
 
    // Used to enable trace replay outputs for testbench
    , parameter trace_p = 1
+   // Used to enable debug trace from BE calc module
+   , parameter calc_debug_p = 1
    )
   (input                                                      clk_i
    , input                                                    reset_i
@@ -56,6 +58,7 @@ module wrapper
   bp_top 
    #(.cfg_p(cfg_p)
      ,.trace_p(trace_p)
+     ,.calc_debug_p(calc_debug_p)
      )
    dut
     (.*);

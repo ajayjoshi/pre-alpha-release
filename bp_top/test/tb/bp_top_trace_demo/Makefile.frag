@@ -1,4 +1,5 @@
-TRACE_REPLAY ?= 1
+# TODO: reset back to 1 - set to 0 for testing multicore queue demos with MESI
+TRACE_REPLAY ?= 0
 
 DUT_PARAMS = -pvalue+trace_p=$(TRACE_REPLAY)
 
