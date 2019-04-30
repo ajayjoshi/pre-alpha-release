@@ -156,6 +156,8 @@ bp_me_top
  #(.cfg_p(cfg_p)
    ,.cfg_link_addr_width_p(cfg_link_addr_width_p)
    ,.cfg_link_data_width_p(cfg_link_data_width_p)
+   // TODO: setting for multicore debug
+   ,.cce_trace_p(1)
  )
  me
   (.clk_i(clk_i)
