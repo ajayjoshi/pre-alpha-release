@@ -150,7 +150,9 @@ $BP_ME_DIR/src/v/network/bp_me_network_channel_data_cmd.v
 $BP_ME_DIR/src/v/network/bp_me_network_channel_data_resp.v
 $BP_ME_DIR/src/v/network/bp_me_network_pkt_encode_data_cmd.v
 $BP_ME_DIR/src/v/network/bp_me_network_pkt_encode_data_resp.v
+$BP_ME_DIR/src/v/network/bp_me_tile_router.v
 ## TOP
 $BP_TOP_DIR/src/v/bp_top.v
 $BP_TOP_DIR/src/v/bp_core.v
+$BP_TOP_DIR/src/v/bp_tile.v
 
