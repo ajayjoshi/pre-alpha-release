@@ -51,6 +51,9 @@ extern "C" bool mem_read_req(uint64_t addr)
   mem->addTransaction(false, addr);
   dram.addr_tracker[addr].push(scope);
   dram.result_pending[scope] = false;
+  if (dram.result_data[scope]) {
+    delete dram.result_data[scope];
+  }
   dram.result_data[scope] = new svBitVecVal[(dram.result_size+31)>>5];
 
   printf("CACHELINE READ REQ: %s %x\n", scope.c_str(), addr);
@@ -60,8 +63,19 @@ extern "C" bool mem_read_req(uint64_t addr)
 
 void bp_dram::read_complete(unsigned id, uint64_t addr, uint64_t cycle)
 {
+  for (std::map<uint64_t, std::queue<string>>::iterator it=dram.addr_tracker.begin();
+       it != dram.addr_tracker.end(); it++) {
+    printf("%x: ", it->first);
+    if (!(it->second).empty()) {
+      printf("%s", (it->second).front().c_str());
+    }
+    printf("\n");
+  }
+
   string scope = dram.addr_tracker[addr].front();
   dram.addr_tracker[addr].pop();
+
+  printf("read_complete scope: %s\n", scope.c_str());
 
   for (int i = 0; i < dram.result_size/32; i++) {
     uint32_t word = 0;
@@ -72,11 +86,18 @@ void bp_dram::read_complete(unsigned id, uint64_t addr, uint64_t cycle)
   }
 
   dram.result_pending[scope] = true;
+  svSetScope(svGetScopeFromName(scope.c_str()));
   read_resp(dram.result_data[scope]);
 
   printf("CACHELINE READ: %s %x\t", scope.c_str(), addr);
   for (int i = 63; i >= 0; i--) {
-    printf("%x", dram.mem[addr+i]);
+    printf("%02x", dram.mem[addr+i]);
+  }
+  printf("\n");
+
+  printf("CACHELINE READ: %s %x\t", scope.c_str(), addr);
+  for (int i = (dram.result_size/32)-1; i >= 0; i--) {
+    printf("%08x", dram.result_data[scope][i]);
   }
   printf("\n");
 }
@@ -114,6 +135,7 @@ void bp_dram::write_complete(unsigned id, uint64_t addr, uint64_t cycle)
   dram.addr_tracker[addr].pop();
 
   dram.result_pending[scope] = true;
+  svSetScope(svGetScopeFromName(scope.c_str()));
   write_resp();
 }
 
@@ -158,8 +180,15 @@ extern "C" bool tick()
 
   bool result = dram.result_pending[scope];
   update_valid(result);
-  dram.result_pending[scope] = false;
+  //read_resp(dram.result_data[scope]);
   
   return result;
+}
+
+extern "C" void consumeResult()
+{
+  string scope = svGetNameFromScope(svGetScope());
+  printf("consuming scope: %s\n", scope.c_str());
+  dram.result_pending[scope] = false;
 }
 

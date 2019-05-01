@@ -58,10 +58,10 @@ module bp_mem_dramsim2
 
   `declare_bp_me_if(paddr_width_p, block_size_in_bits_lp, num_lce_p, lce_assoc_p);
 
-  bp_cce_mem_cmd_s mem_cmd_s_r, mem_cmd_i_s;
-  bp_cce_mem_data_cmd_s mem_data_cmd_s_r, mem_data_cmd_i_s;
-  bp_mem_cce_resp_s mem_resp_s_o;
-  bp_mem_cce_data_resp_s mem_data_resp_s_o;
+  bp_cce_mem_cmd_s mem_cmd;
+  bp_cce_mem_data_cmd_s mem_data_cmd, mem_data_cmd_i_s;
+  bp_mem_cce_resp_s mem_resp;
+  bp_mem_cce_data_resp_s mem_data_resp;
 
   // memory signals
   logic [paddr_width_p-1:0] block_rd_addr, block_wr_addr;
@@ -75,25 +75,24 @@ module bp_mem_dramsim2
 
   int k, j;
   always_comb begin
-    mem_resp_o = mem_resp_s_o;
-    mem_data_resp_o = mem_data_resp_s_o;
-    mem_cmd_i_s = mem_cmd_i;
+    mem_resp_o = mem_resp;
+    mem_data_resp_o = mem_data_resp;
     mem_data_cmd_i_s = mem_data_cmd_i;
 
-    block_rd_addr = {mem_cmd_i_s.addr[paddr_width_p-1:block_offset_bits_lp], block_offset_bits_lp'(0)};
+    block_rd_addr = {mem_cmd.addr[paddr_width_p-1:block_offset_bits_lp], block_offset_bits_lp'(0)};
     block_wr_addr = {mem_data_cmd_i_s.addr[paddr_width_p-1:block_offset_bits_lp], block_offset_bits_lp'(0)};
 
     // get the 64-bit chunk
-    k = mem_cmd_s_r.addr[block_offset_bits_lp-1:word_offset_bits_lp];
-    j = mem_cmd_s_r.addr[word_offset_bits_lp-1:0];
+    k = mem_cmd.addr[block_offset_bits_lp-1:word_offset_bits_lp];
+    j = mem_cmd.addr[word_offset_bits_lp-1:0];
     mem_nc_data = dramsim_data[(k*lce_req_data_width_p)+:lce_req_data_width_p];
-    if (mem_cmd_s_r.nc_size == e_lce_nc_req_1) begin
+    if (mem_cmd.nc_size == e_lce_nc_req_1) begin
       nc_data = {56'('0),mem_nc_data[(j*8)+:8]};
-    end else if (mem_cmd_s_r.nc_size == e_lce_nc_req_2) begin
+    end else if (mem_cmd.nc_size == e_lce_nc_req_2) begin
       nc_data = {48'('0),mem_nc_data[(j*8)+:16]};
-    end else if (mem_cmd_s_r.nc_size == e_lce_nc_req_4) begin
+    end else if (mem_cmd.nc_size == e_lce_nc_req_4) begin
       nc_data = {32'('0),mem_nc_data[(j*8)+:32]};
-    end else if (mem_cmd_s_r.nc_size == e_lce_nc_req_8) begin
+    end else if (mem_cmd.nc_size == e_lce_nc_req_8) begin
       nc_data = mem_nc_data;
     end else begin
       nc_data = '0;
@@ -103,8 +102,11 @@ module bp_mem_dramsim2
   typedef enum logic [2:0] {
     RESET
     ,READY
-    ,RD_CMD
-    ,RD_DATA_CMD
+    ,MEM_READ_REQ
+    ,MEM_READ_DATA
+    ,MEM_READ_RESP
+    ,MEM_WRITE_REQ
+    ,MEM_WRITE_RESP
   } mem_state_e;
 
   mem_state_e mem_st;
@@ -117,87 +119,103 @@ module bp_mem_dramsim2
       // outputs
       mem_resp_v_o <= '0;
       mem_data_resp_v_o <= '0;
-      mem_resp_s_o <= '0;
-      mem_data_resp_s_o <= '0;
+      mem_resp <= '0;
+      mem_data_resp <= '0;
 
       // inputs
-      mem_data_cmd_s_r <= '0;
+      mem_data_cmd <= '0;
       mem_data_cmd_yumi_o <= '0;
-      mem_cmd_s_r <= '0;
+      mem_cmd <= '0;
       mem_cmd_yumi_o <= '0;
     end
     else begin
-      mem_resp_s_o <= '0;
+      mem_resp <= '0;
       mem_resp_v_o <= '0;
-      mem_data_resp_s_o <= '0;
+      mem_data_resp <= '0;
       mem_data_resp_v_o <= '0;
 
       read_accepted = '0;
       write_accepted = '0;
+
+      // inputs
+      mem_data_cmd <= mem_data_cmd;
+      mem_data_cmd_yumi_o <= '0;
+      mem_cmd <= mem_cmd;
+      mem_cmd_yumi_o <= '0;
 
       case (mem_st)
         RESET: begin
           mem_st <= READY;
         end
         READY: begin
+          mem_st <= READY;
           // mem data command - need to write data to memory
           if (mem_data_cmd_v_i && mem_resp_ready_i) begin
             // do the write to memory ram if available
             write_accepted = mem_write_req(block_wr_addr, mem_data_cmd_i_s.data);
 
             mem_data_cmd_yumi_o <= write_accepted;
-            mem_data_cmd_s_r    <= mem_data_cmd_i;
-            mem_st              <= write_accepted ? RD_DATA_CMD : READY;
-          end else if (mem_cmd_v_i && mem_data_resp_ready_i) begin
-            // do the read from memory ram if available
-            read_accepted = mem_read_req(block_rd_addr);
-
-            mem_cmd_yumi_o <= read_accepted;
-            mem_cmd_s_r    <= mem_cmd_i;
-            mem_st         <= read_accepted ? RD_CMD : READY;
-
+            mem_data_cmd        <= mem_data_cmd_i;
+            mem_st              <= write_accepted ? MEM_WRITE_REQ : READY;
+          /*
+          if (mem_data_cmd_v_i) begin
+            mem_data_cmd_yumi_o <= 1'b1;
+            mem_data_cmd        <= mem_data_cmd_i;
+            mem_st              <= MEM_WRITE_REQ;
+          */
+          end else if (mem_cmd_v_i) begin
+            mem_cmd_yumi_o <= 1'b1;
+            mem_cmd        <= mem_cmd_i;
+            mem_st         <= MEM_READ_REQ;
           end
         end
-        RD_CMD: begin
-          mem_cmd_yumi_o <= '0;
-          mem_st <= dramsim_valid ? READY : RD_CMD;
+        MEM_READ_REQ: begin
+          mem_st <= mem_read_req(block_rd_addr) ? MEM_READ_RESP : MEM_READ_REQ;
+        end
+        MEM_READ_RESP: begin
+          mem_st <= MEM_READ_RESP;
 
-          mem_data_resp_s_o.msg_type <= mem_cmd_s_r.msg_type;
-          mem_data_resp_s_o.payload.lce_id <= mem_cmd_s_r.payload.lce_id;
-          mem_data_resp_s_o.payload.way_id <= mem_cmd_s_r.payload.way_id;
-          mem_data_resp_s_o.addr <= mem_cmd_s_r.addr;
-          if (mem_cmd_s_r.non_cacheable) begin
-            mem_data_resp_s_o.data <= {(block_size_in_bits_lp-lce_req_data_width_p)'('0),nc_data};
-          end else begin
-            mem_data_resp_s_o.data <= dramsim_data;
-          end
-          mem_data_resp_s_o.non_cacheable <= mem_cmd_s_r.non_cacheable;
-          mem_data_resp_s_o.nc_size <= mem_cmd_s_r.nc_size;
+          // send the data response if valid data from DRAM and data response is ready for output
+          if (dramsim_valid && mem_data_resp_ready_i) begin
 
-          // pull valid high
-          mem_data_resp_v_o <= dramsim_valid;
+            mem_st <= READY;
+            // inform DRAM that the data was consumed
+            consumeResult();
 
-          if (dramsim_valid) begin
-          $display("DRAMSIM2v Read complete: %x %x\n", block_rd_addr, dramsim_data);
-          $display("DRAMSIM2v Read complete: %x %x\n", block_rd_addr, dramsim_data_n);
+            mem_data_resp.msg_type <= mem_cmd.msg_type;
+            mem_data_resp.payload.lce_id <= mem_cmd.payload.lce_id;
+            mem_data_resp.payload.way_id <= mem_cmd.payload.way_id;
+            mem_data_resp.addr <= mem_cmd.addr;
+            if (mem_cmd.non_cacheable) begin
+              mem_data_resp.data <= {(block_size_in_bits_lp-lce_req_data_width_p)'('0),nc_data};
+            end else begin
+              mem_data_resp.data <= dramsim_data;
+            end
+            mem_data_resp.non_cacheable <= mem_cmd.non_cacheable;
+            mem_data_resp.nc_size <= mem_cmd.nc_size;
+
+            // pull valid high
+            mem_data_resp_v_o <= dramsim_valid;
+
+            $display("DRAMSIM2v Read complete: %x %x\n", block_rd_addr, dramsim_data);
+            $display("DRAMSIM2v Read complete: %x %x\n", block_rd_addr, dramsim_data_n);
           end
 
         end
-        RD_DATA_CMD: begin
-          mem_data_cmd_yumi_o <= '0;
-          mem_st <= dramsim_valid ? READY : RD_DATA_CMD;
+        MEM_WRITE_REQ: begin
+          mem_st <= dramsim_valid ? READY : MEM_WRITE_REQ;
 
-          mem_resp_s_o.msg_type <= mem_data_cmd_s_r.msg_type;
-          mem_resp_s_o.addr <= mem_data_cmd_s_r.addr;
-          mem_resp_s_o.payload.lce_id <= mem_data_cmd_s_r.payload.lce_id;
-          mem_resp_s_o.payload.way_id <= mem_data_cmd_s_r.payload.way_id;
-          mem_resp_s_o.payload.req_addr <= mem_data_cmd_s_r.payload.req_addr;
-          mem_resp_s_o.payload.tr_lce_id <= mem_data_cmd_s_r.payload.tr_lce_id;
-          mem_resp_s_o.payload.tr_way_id <= mem_data_cmd_s_r.payload.tr_way_id;
-          mem_resp_s_o.payload.transfer <= mem_data_cmd_s_r.payload.transfer;
-          mem_resp_s_o.payload.replacement <= mem_data_cmd_s_r.payload.replacement;
-          mem_resp_s_o.non_cacheable <= mem_data_cmd_s_r.non_cacheable;
-          mem_resp_s_o.nc_size <= mem_data_cmd_s_r.nc_size;
+          mem_resp.msg_type <= mem_data_cmd.msg_type;
+          mem_resp.addr <= mem_data_cmd.addr;
+          mem_resp.payload.lce_id <= mem_data_cmd.payload.lce_id;
+          mem_resp.payload.way_id <= mem_data_cmd.payload.way_id;
+          mem_resp.payload.req_addr <= mem_data_cmd.payload.req_addr;
+          mem_resp.payload.tr_lce_id <= mem_data_cmd.payload.tr_lce_id;
+          mem_resp.payload.tr_way_id <= mem_data_cmd.payload.tr_way_id;
+          mem_resp.payload.transfer <= mem_data_cmd.payload.transfer;
+          mem_resp.payload.replacement <= mem_data_cmd.payload.replacement;
+          mem_resp.non_cacheable <= mem_data_cmd.non_cacheable;
+          mem_resp.nc_size <= mem_data_cmd.nc_size;
 
           // pull valid high
           mem_resp_v_o <= dramsim_valid;
@@ -223,11 +241,14 @@ import "DPI-C" context function bit mem_write_req(input longint addr
                                                   , input bit [block_size_in_bits_lp-1:0] data
                                                   );
 
+import "DPI-C" context function void consumeResult();
+
 export "DPI-C" function read_resp;
 export "DPI-C" function write_resp;
 export "DPI-C" function update_valid;
 
 function void read_resp(input bit [block_size_in_bits_lp-1:0] data);
+  $display("DRAMSIM2v read_resp[%0d]: %x\n", mem_id_p, data);
   dramsim_data_n  = data;
 endfunction
 
@@ -242,12 +263,17 @@ endfunction
 initial 
   begin
     init(clock_period_in_ps_p, prog_name_p, dram_cfg_p, dram_sys_cfg_p, dram_capacity_p, block_size_in_bits_lp); 
+    $display("MEM: %0d", mem_id_p);
   end
 
 always_ff @(posedge clk_i)
   begin
+    // always tick the DRAM
     tick();
+    // update the valid
     dramsim_valid <= dramsim_valid_n;
+    // update data if valid high, else hold current data
+    //dramsim_data  <= (dramsim_valid_n) ? dramsim_data_n : dramsim_data;
     dramsim_data  <= dramsim_data_n;
   end
 
