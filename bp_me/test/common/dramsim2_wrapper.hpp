@@ -25,6 +25,8 @@ class bp_dram
 
     std::map<uint64_t, std::queue<string>> addr_tracker;
 
+    string tick_scope;
+
   public:
     void read_hex(char *);
 

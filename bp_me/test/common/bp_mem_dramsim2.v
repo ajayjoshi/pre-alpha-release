@@ -202,13 +202,13 @@ module bp_mem_dramsim2
     end
   end
 
-import "DPI-C" function void init(input longint clock_period
-                                  , input string prog_name
-                                  , input string dram_cfg_name
-                                  , input string system_cfg_name
-                                  , input longint dram_capacity
-                                  , input longint dram_req_width
-                                  );
+import "DPI-C" context function void init(input longint clock_period
+                                          , input string prog_name
+                                          , input string dram_cfg_name
+                                          , input string system_cfg_name
+                                          , input longint dram_capacity
+                                          , input longint dram_req_width
+                                          );
 import "DPI-C" context function bit tick();
 
 import "DPI-C" context function bit mem_read_req(input longint addr);

@@ -44,7 +44,7 @@ extern "C" bool mem_read_req(uint64_t addr)
 {
   string scope = svGetNameFromScope(svGetScope());
 
-  if (!mem->willAcceptTransaction()) {
+  if (!mem->willAcceptTransaction(addr)) {
      return false;
   }
 
@@ -52,6 +52,8 @@ extern "C" bool mem_read_req(uint64_t addr)
   dram.addr_tracker[addr].push(scope);
   dram.result_pending[scope] = false;
   dram.result_data[scope] = new svBitVecVal[(dram.result_size+31)>>5];
+
+  printf("CACHELINE READ REQ: %s %x\n", scope.c_str(), addr);
 
   return true;
 }
@@ -72,7 +74,7 @@ void bp_dram::read_complete(unsigned id, uint64_t addr, uint64_t cycle)
   dram.result_pending[scope] = true;
   read_resp(dram.result_data[scope]);
 
-  //printf("CACHELINE READ: %x\t", addr);
+  //printf("CACHELINE READ: %s %x\t", scope.c_str(), addr);
   //for (int i = 63; i >= 0; i--) {
   //  printf("%x", dram.mem[addr+i]);
   //}
@@ -83,7 +85,7 @@ extern "C" bool mem_write_req(uint64_t addr, svBitVecVal *data)
 {
   string scope = svGetNameFromScope(svGetScope());
 
-  if (!mem->willAcceptTransaction()) {
+  if (!mem->willAcceptTransaction(addr)) {
      return false;
   }
 
@@ -97,7 +99,7 @@ extern "C" bool mem_write_req(uint64_t addr, svBitVecVal *data)
   dram.addr_tracker[addr].push(scope);
   dram.result_pending[scope] = false;
   
-  //printf("CACHELINE WRITE: %x\t", addr);
+  //printf("CACHELINE WRITE: %s %x\t", scope.c_str(), addr);
   //for (int i = 63; i >= 0; i--) {
   //  printf("%x", dram.mem[addr+i]);
   //}
@@ -123,6 +125,8 @@ extern "C" void init(uint64_t clock_period_in_ps
                      , uint64_t dram_req_width
                      )
 {
+  string scope = svGetNameFromScope(svGetScope());
+
   if (!mem) {
     dram.result_size = dram_req_width;
 
@@ -138,13 +142,19 @@ extern "C" void init(uint64_t clock_period_in_ps
     uint64_t clock_freq_in_hz = (uint64_t) (1.0 / (clock_period_in_ps * 1.0E-12));
     mem->setCPUClockSpeed(clock_freq_in_hz); 
     dram.read_hex(prog_name);
+
+    dram.tick_scope = scope;
   }
+
+  dram.result_pending[scope] = false;
 }
 
 extern "C" bool tick() 
 {
   string scope = svGetNameFromScope(svGetScope());
-  mem->update();
+  if (!scope.compare(dram.tick_scope)) {
+    mem->update();
+  }
 
   bool result = dram.result_pending[scope];
   dram.result_pending[scope] = false;
