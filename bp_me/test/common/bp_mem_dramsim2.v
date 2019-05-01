@@ -68,7 +68,7 @@ module bp_mem_dramsim2
   logic [lce_req_data_width_p-1:0] mem_nc_data, nc_data;
 
   logic [511:0] dramsim_data;
-  logic dramsim_valid;
+  logic dramsim_valid, dramsim_valid_n;
   logic [511:0] dramsim_data_n;
 
   logic read_accepted, write_accepted;
@@ -143,7 +143,7 @@ module bp_mem_dramsim2
           // mem data command - need to write data to memory
           if (mem_data_cmd_v_i && mem_resp_ready_i) begin
             // do the write to memory ram if available
-            write_accepted = mem_write_req(block_rd_addr, mem_data_cmd_i_s.data);
+            write_accepted = mem_write_req(block_wr_addr, mem_data_cmd_i_s.data);
 
             mem_data_cmd_yumi_o <= write_accepted;
             mem_data_cmd_s_r    <= mem_data_cmd_i;
@@ -155,6 +155,7 @@ module bp_mem_dramsim2
             mem_cmd_yumi_o <= read_accepted;
             mem_cmd_s_r    <= mem_cmd_i;
             mem_st         <= read_accepted ? RD_CMD : READY;
+
           end
         end
         RD_CMD: begin
@@ -175,6 +176,12 @@ module bp_mem_dramsim2
 
           // pull valid high
           mem_data_resp_v_o <= dramsim_valid;
+
+          if (dramsim_valid) begin
+          $display("DRAMSIM2v Read complete: %x %x\n", block_rd_addr, dramsim_data);
+          $display("DRAMSIM2v Read complete: %x %x\n", block_rd_addr, dramsim_data_n);
+          end
+
         end
         RD_DATA_CMD: begin
           mem_data_cmd_yumi_o <= '0;
@@ -218,9 +225,14 @@ import "DPI-C" context function bit mem_write_req(input longint addr
 
 export "DPI-C" function read_resp;
 export "DPI-C" function write_resp;
+export "DPI-C" function update_valid;
 
 function void read_resp(input bit [block_size_in_bits_lp-1:0] data);
   dramsim_data_n  = data;
+endfunction
+
+function void update_valid(input bit data);
+  dramsim_valid_n = data;
 endfunction
 
 function void write_resp();
@@ -234,7 +246,8 @@ initial
 
 always_ff @(posedge clk_i)
   begin
-    dramsim_valid <= tick(); 
+    tick();
+    dramsim_valid <= dramsim_valid_n;
     dramsim_data  <= dramsim_data_n;
   end
 

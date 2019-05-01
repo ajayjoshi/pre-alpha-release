@@ -4,14 +4,14 @@ using namespace DRAMSim;
 
 extern "C" void read_resp(svBitVecVal* data);
 extern "C" void write_resp();
+extern "C" void update_valid(svBit data);
 
 static MultiChannelMemorySystem *mem;
 static bp_dram dram;
 
 void bp_dram::read_hex(char *filename)
 {
-  string line, tok;
-  char delimiter = ' ';
+  string line;
   std::ifstream hexfile(filename);
   uint64_t current_addr = 0;
 
@@ -74,11 +74,11 @@ void bp_dram::read_complete(unsigned id, uint64_t addr, uint64_t cycle)
   dram.result_pending[scope] = true;
   read_resp(dram.result_data[scope]);
 
-  //printf("CACHELINE READ: %s %x\t", scope.c_str(), addr);
-  //for (int i = 63; i >= 0; i--) {
-  //  printf("%x", dram.mem[addr+i]);
-  //}
-  //printf("\n");
+  printf("CACHELINE READ: %s %x\t", scope.c_str(), addr);
+  for (int i = 63; i >= 0; i--) {
+    printf("%x", dram.mem[addr+i]);
+  }
+  printf("\n");
 }
 
 extern "C" bool mem_write_req(uint64_t addr, svBitVecVal *data)
@@ -157,6 +157,7 @@ extern "C" bool tick()
   }
 
   bool result = dram.result_pending[scope];
+  update_valid(result);
   dram.result_pending[scope] = false;
   
   return result;
