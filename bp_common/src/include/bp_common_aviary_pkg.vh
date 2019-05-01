@@ -69,7 +69,7 @@ package bp_common_aviary_pkg;
 
   localparam bp_proc_param_s bp_dual_core_cfg_p = 
     '{num_core: 2
-      ,num_cce: 2
+      ,num_cce: 1
       ,num_lce: 4
       
       ,vaddr_width: 39
@@ -98,7 +98,7 @@ package bp_common_aviary_pkg;
 
   localparam bp_proc_param_s bp_quad_core_cfg_p = 
     '{num_core: 4
-      ,num_cce: 4
+      ,num_cce: 1
       ,num_lce: 8
       
       ,vaddr_width: 39
@@ -127,7 +127,7 @@ package bp_common_aviary_pkg;
 
   localparam bp_proc_param_s bp_oct_core_cfg_p = 
     '{num_core: 8
-      ,num_cce: 8
+      ,num_cce: 1
       ,num_lce: 16
       
       ,vaddr_width: 39
