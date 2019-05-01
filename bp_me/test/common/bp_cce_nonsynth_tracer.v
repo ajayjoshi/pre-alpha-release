@@ -138,10 +138,16 @@ module bp_cce_nonsynth_tracer
                  , $time, cce_id_i, lce_data_resp.src_id, lce_data_resp.addr, lce_data_resp.msg_type);
       end
       if (mem_resp_v_i & mem_resp_yumi_i) begin
-        //$display("%0T", $time);
+        $display("%0T: CCE[%0d] MEM RESP wr[%0b] addr[%H] lce[%0d] way[%0d] req_addr[%H] nc[%0b]"
+                 , $time, cce_id_i, mem_resp.msg_type, mem_resp.addr
+                 , mem_resp.payload.lce_id, mem_resp.payload.way_id
+                 , mem_resp.payload.req_addr, mem_resp.non_cacheable);
       end
       if (mem_data_resp_v_i & mem_data_resp_yumi_i) begin
-        //$display("%0T", $time);
+        $display("%0T: CCE[%0d] MEM DATA RESP wr[%0b] addr[%H] lce[%0d] way[%0d] nc[%0b]\n%H"
+                 , $time, cce_id_i, mem_data_resp.msg_type, mem_data_resp.addr
+                 , mem_data_resp.payload.lce_id, mem_data_resp.payload.way_id
+                 , mem_data_resp.non_cacheable, mem_data_resp.data);
       end
       // outbound messages
       if (lce_cmd_v_i & lce_cmd_ready_i) begin
@@ -154,10 +160,15 @@ module bp_cce_nonsynth_tracer
                  , $time, cce_id_i, lce_data_cmd.dst_id, lce_data_cmd.msg_type, lce_data_cmd.way_id);
       end
       if (mem_cmd_v_i & mem_cmd_ready_i) begin
-        //$display("%0T", $time);
+        $display("%0T: CCE[%0d] MEM CMD wr[%0b] addr[%H] lce[%0d] way[%0d] nc[%0b]"
+                 , $time, cce_id_i, mem_cmd.msg_type, mem_cmd.addr, mem_cmd.payload.lce_id
+                 , mem_cmd.payload.way_id, mem_cmd.non_cacheable);
       end
       if (mem_data_cmd_v_i & mem_data_cmd_ready_i) begin
-        //$display("%0T", $time);
+        $display("%0T: CCE[%0d] MEM DATA CMD wr[%0b] addr[%H] lce[%0d] way[%0d] req_addr[%H] nc[%0b]\n%H"
+                 , $time, cce_id_i, mem_data_cmd.msg_type, mem_data_cmd.addr
+                 , mem_data_cmd.payload.lce_id, mem_data_cmd.payload.way_id
+                 , mem_data_cmd.payload.req_addr, mem_data_cmd.non_cacheable, mem_data_cmd.data);
       end
     end
   end
