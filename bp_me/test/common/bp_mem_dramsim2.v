@@ -197,8 +197,8 @@ module bp_mem_dramsim2
             // pull valid high
             mem_data_resp_v_o <= dramsim_valid;
 
-            $display("DRAMSIM2v Read complete: %x %x\n", block_rd_addr, dramsim_data);
-            $display("DRAMSIM2v Read complete: %x %x\n", block_rd_addr, dramsim_data_n);
+            //$display("DRAMSIM2v Read complete: %x %x\n", block_rd_addr, dramsim_data);
+            //$display("DRAMSIM2v Read complete: %x %x\n", block_rd_addr, dramsim_data_n);
           end
 
         end
@@ -248,7 +248,7 @@ export "DPI-C" function write_resp;
 export "DPI-C" function update_valid;
 
 function void read_resp(input bit [block_size_in_bits_lp-1:0] data);
-  $display("DRAMSIM2v read_resp[%0d]: %x\n", mem_id_p, data);
+  //$display("DRAMSIM2v read_resp[%0d]: %x\n", mem_id_p, data);
   dramsim_data_n  = data;
 endfunction
 
@@ -263,7 +263,6 @@ endfunction
 initial 
   begin
     init(clock_period_in_ps_p, prog_name_p, dram_cfg_p, dram_sys_cfg_p, dram_capacity_p, block_size_in_bits_lp); 
-    $display("MEM: %0d", mem_id_p);
   end
 
 always_ff @(posedge clk_i)
@@ -272,8 +271,6 @@ always_ff @(posedge clk_i)
     tick();
     // update the valid
     dramsim_valid <= dramsim_valid_n;
-    // update data if valid high, else hold current data
-    //dramsim_data  <= (dramsim_valid_n) ? dramsim_data_n : dramsim_data;
     dramsim_data  <= dramsim_data_n;
   end
 

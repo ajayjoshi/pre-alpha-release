@@ -63,19 +63,8 @@ extern "C" bool mem_read_req(uint64_t addr)
 
 void bp_dram::read_complete(unsigned id, uint64_t addr, uint64_t cycle)
 {
-  for (std::map<uint64_t, std::queue<string>>::iterator it=dram.addr_tracker.begin();
-       it != dram.addr_tracker.end(); it++) {
-    printf("%x: ", it->first);
-    if (!(it->second).empty()) {
-      printf("%s", (it->second).front().c_str());
-    }
-    printf("\n");
-  }
-
   string scope = dram.addr_tracker[addr].front();
   dram.addr_tracker[addr].pop();
-
-  printf("read_complete scope: %s\n", scope.c_str());
 
   for (int i = 0; i < dram.result_size/32; i++) {
     uint32_t word = 0;
@@ -89,17 +78,17 @@ void bp_dram::read_complete(unsigned id, uint64_t addr, uint64_t cycle)
   svSetScope(svGetScopeFromName(scope.c_str()));
   read_resp(dram.result_data[scope]);
 
-  printf("CACHELINE READ: %s %x\t", scope.c_str(), addr);
-  for (int i = 63; i >= 0; i--) {
-    printf("%02x", dram.mem[addr+i]);
-  }
-  printf("\n");
+  //printf("CACHELINE READ: %s %x\t", scope.c_str(), addr);
+  //for (int i = 63; i >= 0; i--) {
+  //  printf("%02x", dram.mem[addr+i]);
+  //}
+  //printf("\n");
 
-  printf("CACHELINE READ: %s %x\t", scope.c_str(), addr);
-  for (int i = (dram.result_size/32)-1; i >= 0; i--) {
-    printf("%08x", dram.result_data[scope][i]);
-  }
-  printf("\n");
+  //printf("CACHELINE READ: %s %x\t", scope.c_str(), addr);
+  //for (int i = (dram.result_size/32)-1; i >= 0; i--) {
+  //  printf("%08x", dram.result_data[scope][i]);
+  //}
+  //printf("\n");
 }
 
 extern "C" bool mem_write_req(uint64_t addr, svBitVecVal *data)
@@ -188,7 +177,6 @@ extern "C" bool tick()
 extern "C" void consumeResult()
 {
   string scope = svGetNameFromScope(svGetScope());
-  printf("consuming scope: %s\n", scope.c_str());
   dram.result_pending[scope] = false;
 }
 
