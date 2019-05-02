@@ -81,16 +81,16 @@ localparam cce_lce_cmd_network_width_lp = cce_lce_cmd_width_lp+`BSG_SAFE_CLOG2(x
 `declare_bsg_ready_and_link_sif_s(lce_data_cmd_network_width_lp, bp_lce_data_cmd_ready_and_link_sif_s);
 `declare_bsg_ready_and_link_sif_s(cce_lce_cmd_network_width_lp, bp_lce_cmd_ready_and_link_sif_s);
 
-bp_lce_req_ready_and_link_sif_s [x_cord_width_p-1:0] lce_req_link_i_stitch;
-bp_lce_req_ready_and_link_sif_s [x_cord_width_p-1:0] lce_req_link_o_stitch;
+bp_lce_req_ready_and_link_sif_s [dirs_lp-1:0] lce_req_link_i_stitch;
+bp_lce_req_ready_and_link_sif_s [dirs_lp-1:0] lce_req_link_o_stitch;
 
-bp_lce_resp_ready_and_link_sif_s [x_cord_width_p-1:0] lce_resp_link_i_stitch;
-bp_lce_resp_ready_and_link_sif_s [x_cord_width_p-1:0] lce_resp_link_o_stitch;
+bp_lce_resp_ready_and_link_sif_s [dirs_lp-1:0] lce_resp_link_i_stitch;
+bp_lce_resp_ready_and_link_sif_s [dirs_lp-1:0] lce_resp_link_o_stitch;
 
-bp_lce_cmd_ready_and_link_sif_s [x_cord_width_p-1:0] lce_cmd_link_i_stitch;
-bp_lce_cmd_ready_and_link_sif_s [x_cord_width_p-1:0] lce_cmd_link_o_stitch;
+bp_lce_cmd_ready_and_link_sif_s [dirs_lp-1:0] lce_cmd_link_i_stitch;
+bp_lce_cmd_ready_and_link_sif_s [dirs_lp-1:0] lce_cmd_link_o_stitch;
 
-for (genvar i = 0; i < x_cord_width_p; i++) 
+for (genvar i = 0; i < dirs_lp; i++) 
   begin : rof1
     assign lce_req_link_i_stitch[i].data          = lce_req_i;
     assign lce_req_link_i_stitch[i].v             = lce_req_v_i;
@@ -110,14 +110,14 @@ for (genvar i = 0; i < x_cord_width_p; i++)
   end // rof1
 
 bsg_mesh_router_buffered
- #(.width_p(lce_cce_req_width_lp)
+ #(.width_p(lce_cce_req_network_width_lp)
    ,.x_cord_width_p(x_cord_width_p)
    ,.y_cord_width_p(y_cord_width_p)
    ,.debug_p(debug_p)
    ,.XY_order_p(0)
    )
  req_router
-  (.clk(clk_i)
+  (.clk_i(clk_i)
    ,.reset_i(reset_i)
    ,.link_i(lce_req_link_i_stitch)
    ,.link_o(lce_req_link_o_stitch)
@@ -126,14 +126,14 @@ bsg_mesh_router_buffered
    );
 
 bsg_mesh_router_buffered
- #(.width_p(lce_cce_resp_width_lp)
+ #(.width_p(lce_cce_resp_network_width_lp)
    ,.x_cord_width_p(x_cord_width_p)
    ,.y_cord_width_p(y_cord_width_p)
    ,.debug_p(debug_p)
    ,.XY_order_p(0)
    )
  resp_router
-  (.clk(clk_i)
+  (.clk_i(clk_i)
    ,.reset_i(reset_i)
    ,.link_i(lce_resp_link_i_stitch)
    ,.link_o(lce_resp_link_o_stitch)
@@ -142,14 +142,14 @@ bsg_mesh_router_buffered
    );
 
 bsg_mesh_router_buffered
- #(.width_p(cce_lce_cmd_width_lp)
+ #(.width_p(cce_lce_cmd_network_width_lp)
    ,.x_cord_width_p(x_cord_width_p)
    ,.y_cord_width_p(y_cord_width_p)
    ,.debug_p(debug_p)
    ,.XY_order_p(0)
    )
  cmd_router
-  (.clk(clk_i)
+  (.clk_i(clk_i)
    ,.reset_i(reset_i)
    ,.link_i(lce_cmd_link_i_stitch)
    ,.link_o(lce_cmd_link_o_stitch)
@@ -165,6 +165,9 @@ bp_me_lce_data_cmd_router
  data_cmd_router
   (.clk_i(clk_i)
    ,.reset_i(reset_i)
+
+   ,.my_x_i(my_x_i)
+   ,.my_y_i(my_y_i)
 
    ,.lce_data_cmd_i(lce_data_cmd_i)
    ,.lce_data_cmd_v_i(lce_data_cmd_v_i)
@@ -183,6 +186,9 @@ bp_me_lce_data_resp_router
  data_resp_router
   (.clk_i(clk_i)
    ,.reset_i(reset_i)
+
+   ,.my_x_i(my_x_i)
+   ,.my_y_i(my_y_i)
 
    ,.lce_data_resp_i(lce_data_resp_i)
    ,.lce_data_resp_v_i(lce_data_resp_v_i)

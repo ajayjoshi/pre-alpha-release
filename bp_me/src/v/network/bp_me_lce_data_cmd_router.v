@@ -25,6 +25,8 @@ module bp_me_lce_data_cmd_router
    , localparam router_data_width_lp=
        (max_packet_width_lp/max_num_flit_p)+((max_packet_width_lp%max_num_flit_p) == 0 ? 0 : 1)
    , localparam payload_offset_lp=(x_cord_width_p+y_cord_width_p+len_width_lp)
+   , localparam network_width_lp = lce_data_cmd_width_lp+`BSG_SAFE_CLOG2(x_cord_width_p)+1
+   , localparam bsg_ready_and_link_sif_width_lp=`bsg_ready_and_link_sif_width(network_width_lp)
    )
   (input clk_i
    , input reset_i
@@ -46,13 +48,13 @@ logic [dirs_lp-1:0]                           wh_lce_data_cmd_v_li, wh_lce_data_
 logic [dirs_lp-1:0][router_data_width_lp-1:0] wh_lce_data_cmd_lo;
 logic [dirs_lp-1:0]                           wh_lce_data_cmd_v_lo, wh_lce_data_cmd_ready_li;
 
-for (genvar i = 0; i < x_cord_width_p; i++)
+for (genvar i = 0; i < dirs_lp; i++)
   begin : rof2
     logic [max_packet_width_lp-1:0] lce_data_cmd_pkt_li, lce_data_cmd_pkt_lo;
 
-    bsg_me_network_pkt_encode_data_cmd
+    bp_me_network_pkt_encode_data_cmd
      #(.num_lce_p(num_lce_p)
-       ,.block_size_in_bits(cce_block_width_p)
+       ,.block_size_in_bits_p(cce_block_width_p)
        ,.lce_assoc_p(lce_assoc_p)
        ,.max_num_flit_p(max_num_flit_p)
        ,.x_cord_width_p(x_cord_width_p)
@@ -77,9 +79,9 @@ for (genvar i = 0; i < x_cord_width_p; i++)
        ,.v_i(lce_data_cmd_v_i[i])
        ,.ready_o(lce_data_cmd_ready_o[i])
 
-       ,.data_o(wh_lce_data_cmd_li)
-       ,.v_o(wh_lce_data_cmd_v_li)
-       ,.ready_i(wh_lce_data_cmd_ready_lo)
+       ,.data_o(wh_lce_data_cmd_li[i])
+       ,.v_o(wh_lce_data_cmd_v_li[i])
+       ,.ready_i(wh_lce_data_cmd_ready_lo[i])
        );
 
     bsg_wormhole_router_adapter_out
@@ -92,9 +94,9 @@ for (genvar i = 0; i < x_cord_width_p; i++)
       (.clk_i(clk_i)
        ,.reset_i(reset_i)
 
-       ,.data_i(wh_lce_data_cmd_lo)
-       ,.v_i(wh_lce_data_cmd_v_lo)
-       ,.ready_o(wh_lce_data_cmd_ready_li)
+       ,.data_i(wh_lce_data_cmd_lo[i])
+       ,.v_i(wh_lce_data_cmd_v_lo[i])
+       ,.ready_o(wh_lce_data_cmd_ready_li[i])
 
        ,.data_o(lce_data_cmd_pkt_lo)
        ,.v_o(lce_data_cmd_v_o[i])
@@ -117,8 +119,8 @@ for (genvar i = 0; i < x_cord_width_p; i++)
       (.clk_i(clk_i)
        ,.reset_i(reset_i)
 
-       ,.local_x_coord_i(my_x_i)
-       ,.local_y_coord_i(my_y_i)
+       ,.local_x_cord_i(my_x_i)
+       ,.local_y_cord_i(my_y_i)
 
        ,.data_i(wh_lce_data_cmd_li)
        ,.valid_i(wh_lce_data_cmd_v_li)
