@@ -59,19 +59,19 @@ module bp_tile
 
    // Router - Inputs 
    // Connected on east and west
-   , input [E:W][lce_cce_req_network_width_lp-1:0]       lce_req_link_i
-   , input [E:W][lce_cce_resp_network_width_lp-1:0]      lce_resp_link_i
-   , input [E:W][cce_lce_cmd_network_width_lp-1:0]       lce_cmd_link_i
-   , input [E:W][lce_cce_data_resp_network_width_lp-1:0] lce_data_resp_link_i
-   , input [E:W][lce_data_cmd_network_width_lp-1:0]      lce_data_cmd_link_i
+   , input [E:W][2+lce_cce_req_network_width_lp-1:0]       lce_req_link_i
+   , input [E:W][2+lce_cce_resp_network_width_lp-1:0]      lce_resp_link_i
+   , input [E:W][2+cce_lce_cmd_network_width_lp-1:0]       lce_cmd_link_i
+   , input [E:W][2+lce_cce_data_resp_network_width_lp-1:0] lce_data_resp_link_i
+   , input [E:W][2+lce_data_cmd_network_width_lp-1:0]      lce_data_cmd_link_i
 
    // Router - Outputs
    // Connected on east and west
-   , output [E:W][lce_cce_req_network_width_lp-1:0]       lce_req_link_o
-   , output [E:W][lce_cce_resp_network_width_lp-1:0]      lce_resp_link_o
-   , output [E:W][cce_lce_cmd_network_width_lp-1:0]       lce_cmd_link_o
-   , output [E:W][lce_cce_data_resp_network_width_lp-1:0] lce_data_resp_link_o
-   , output [E:W][lce_data_cmd_network_width_lp-1:0]      lce_data_cmd_link_o
+   , output [E:W][2+lce_cce_req_network_width_lp-1:0]       lce_req_link_o
+   , output [E:W][2+lce_cce_resp_network_width_lp-1:0]      lce_resp_link_o
+   , output [E:W][2+cce_lce_cmd_network_width_lp-1:0]       lce_cmd_link_o
+   , output [E:W][2+lce_cce_data_resp_network_width_lp-1:0] lce_data_resp_link_o
+   , output [E:W][2+lce_data_cmd_network_width_lp-1:0]      lce_data_cmd_link_o
 
    // Memory side connection
    // Connected on south

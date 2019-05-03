@@ -80,11 +80,11 @@ module bp_top_tiled
                        ,cce_block_width_p
                        )
 
-logic [num_core_p:0][W:E][lce_cce_req_network_width_lp-1:0] lce_req_link_stitch_lo, lce_req_link_stitch_li;
-logic [num_core_p:0][W:E][lce_cce_resp_network_width_lp-1:0] lce_resp_link_stitch_lo, lce_resp_link_stitch_li;
-logic [num_core_p:0][W:E][lce_cce_data_resp_network_width_lp-1:0] lce_data_resp_link_stitch_lo, lce_data_resp_link_stitch_li;
-logic [num_core_p:0][W:E][cce_lce_cmd_network_width_lp-1:0] lce_cmd_link_stitch_lo, lce_cmd_link_stitch_li;
-logic [num_core_p:0][W:E][lce_data_cmd_network_width_lp-1:0] lce_data_cmd_link_stitch_lo, lce_data_cmd_link_stitch_li;
+logic [num_core_p:0][E:W][2+lce_cce_req_network_width_lp-1:0] lce_req_link_stitch_lo, lce_req_link_stitch_li;
+logic [num_core_p:0][E:W][2+lce_cce_resp_network_width_lp-1:0] lce_resp_link_stitch_lo, lce_resp_link_stitch_li;
+logic [num_core_p:0][E:W][2+lce_cce_data_resp_network_width_lp-1:0] lce_data_resp_link_stitch_lo, lce_data_resp_link_stitch_li;
+logic [num_core_p:0][E:W][2+cce_lce_cmd_network_width_lp-1:0] lce_cmd_link_stitch_lo, lce_cmd_link_stitch_li;
+logic [num_core_p:0][E:W][2+lce_data_cmd_network_width_lp-1:0] lce_data_cmd_link_stitch_lo, lce_data_cmd_link_stitch_li;
 
 for(genvar i = 0; i < num_core_p; i++) 
   begin : rof1
