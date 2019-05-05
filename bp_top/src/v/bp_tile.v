@@ -366,7 +366,7 @@ for (genvar i = 0; i < dirs_lp; i++)
       end
   end // rof1
 
-for (genvar i = 0; i < 1; i++)
+for (genvar i = 0; i < 2; i++)
   begin : rof3
     bsg_mesh_router_buffered
      #(.width_p(lce_cce_req_network_width_lp)
